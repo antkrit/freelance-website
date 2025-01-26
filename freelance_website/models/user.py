@@ -28,9 +28,9 @@ class UserBase(SQLModel):
    role: UserRoles = Field(
         sa_column=Column(
             "role",
-            Enum(UserRoles),
-            default=UserRoles.user
-        )
+            Enum(UserRoles)
+        ),
+        default=UserRoles.user,
    )
    disabled: bool = Field(default=False)
 
@@ -50,5 +50,7 @@ class UserRead(UUIDModel, UserBase):
    ...
 
 
-class UserPatch(UserBase):
-   username: Optional[str] = Field(max_length=255)
+class UserPatch(BaseModel):
+   username: Optional[str] = None
+   role: Optional[UserRoles] = None
+   disabled: Optional[bool] = None

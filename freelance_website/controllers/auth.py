@@ -34,7 +34,7 @@ async def register_controller(user_data: RegisterRequest, session: AsyncSession)
 
     user = User(username=user_data.username, hashed_password=get_password_hash(user_data.password))
     session.add(user)
-    session.commit()
+    await session.commit()
 
     return user
 

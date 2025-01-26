@@ -1,8 +1,10 @@
 
 import uuid
-from datetime import datetime
 
-from pydantic import BaseModel
+from datetime import datetime
+from typing import Generic, TypeVar
+
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlmodel import Field, SQLModel
 
@@ -43,3 +45,11 @@ class TimedModel(SQLModel):
             "onupdate": text("current_timestamp(0)")
         }
     )
+
+
+M = TypeVar("M")
+
+
+class PaginatedResponse(BaseModel, Generic[M]):
+    count: int = Field(...)
+    items: list[M] = Field(...)

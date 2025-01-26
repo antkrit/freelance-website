@@ -39,13 +39,13 @@ async def get_current_user(
     return user
 
 
-async def get_current_active_user(current_user: Annotated[UserRead, Depends(get_current_user)]):
+async def get_current_active_user(current_user: Annotated[UserRead, Depends(get_current_user)]) -> UserRead:
     if current_user.disabled:
         raise HTTPException(status_code=403, detail="Inactive user.")
     return current_user
 
 
-class Autorize:
+class Autorized:
   
   def __init__(self, allowed_roles):
     self.allowed_roles = allowed_roles
