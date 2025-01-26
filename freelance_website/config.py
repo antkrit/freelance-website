@@ -64,5 +64,27 @@ class APISettings(BaseSettings):
     )
 
 
+class AUTHSettings(BaseSettings):
+    signature_key: str
+    algorithm: str
+    expiration_time_minutes: int
+
+    model_config = SettingsConfigDict(
+        env_prefix="JWT_",
+        extra="ignore",
+    )
+
+
+class DBSettings(BaseSettings):
+    connection_string: str
+
+    model_config = SettingsConfigDict(
+        env_prefix="DB_",
+        extra="ignore",
+    )
+
+
 settings = Settings()
 api_settings = APISettings()
+auth_settings = AUTHSettings()
+db_settings = DBSettings()
