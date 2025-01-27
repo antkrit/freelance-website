@@ -41,7 +41,7 @@ class User(
    UserBase,
    table=True
 ):
-   __tablename__ = f"users"
+   __tablename__ = "users"
 
    hashed_password: str = Field(nullable=False)
 
