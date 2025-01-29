@@ -18,7 +18,7 @@ poetry install
 
 ### Local Run
 
-First you need to create `.env` file in project root directory. You can find an example in the `.env.local` file
+First you need to create `.env` file in project root directory. You can find an example in the `.env.local` file. Make sure that database specified in the .env file exists.
 
 #### Use uvicorn
 
@@ -38,4 +38,14 @@ docker build --tag freelance_website .
 docker run --publish 8000:8000 --env-file .env freelance_website:latest
 ```
 
-Verify the API works properly at `localhost:8000`, and there are no errors in the console. Swagger is hosted under `localhost:8000/docs`
+
+### Testing
+
+The easiest way to test is by using docker compose:
+```bash
+docker compose up
+```
+
+To test API use Swagger UI that is hosted on `localhost:8000/docs`. It is protected with basic authorization, credentials are specified in the `.env` file (default username/password: admin/root).
+
+To test protected endpoints you need to be authorized. On application startup admin user is created if not exists (username: `admin`, password: `root`). Also, you can register your own user (may not have enough permissions for some endpoints). To authorize in Swagger UI use big green "Authorize" button in right upper corner.
