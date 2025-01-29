@@ -1,3 +1,5 @@
+import logging
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,7 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from freelance_website.config import api_settings
-from freelance_website.dependencies.database import async_engine, get_async_session
+from freelance_website.dependencies.database import async_engine
 from freelance_website.routes import api, docs
 from freelance_website.models.user import User, UserRoles
 from freelance_website.utils import get_password_hash
@@ -21,11 +23,13 @@ async def init_db():
     # Create superuser if not exists
     async_session = sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
     async with async_session() as session:
+        session: AsyncSession
         admin_user = await session.exec(select(User).where(User.username=="admin"))
+
         if not admin_user.first():
             admin_user = User(username="admin", role=UserRoles.admin, hashed_password=get_password_hash("root"))
 
-            await session.add(admin_user)
+            session.add(admin_user)
             await session.commit()
 
 

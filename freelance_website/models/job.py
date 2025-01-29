@@ -24,7 +24,7 @@ class JobRequest(
 ):
    __tablename__ = "job_requests"
 
-   user_id: uuid.UUID = Field(foreign_key="users.id", nullable=False)
+   user_id: uuid.UUID = Field(foreign_key="users.id", nullable=False, ondelete="CASCADE")
 
 
 class JobRequestPatch(BaseModel):
