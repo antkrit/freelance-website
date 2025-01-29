@@ -1,7 +1,11 @@
+import pandas as pd
+
+from catboost import CatBoostRegressor
 from fastapi import HTTPException, status
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio.session import AsyncSession
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from ..models.job import JobRequest, JobRequestPatch
 
@@ -60,6 +64,14 @@ async def patch_job_request_controller(job_request: JobRequest, request_data: Jo
     await session.refresh(job_request)
 
     return job_request
+
+
+async def suggest_price_for_job_request_controller(job_request: JobRequest, model: CatBoostRegressor, vectorizer: TfidfVectorizer) -> float:
+    data = pd.DataFrame({"title": job_request.title, "country": job_request.country}, index=[0])
+    job_title_vectors = vectorizer.transform(data["title"]).toarray()
+    predict_data = pd.concat([pd.DataFrame(job_title_vectors), data[["country"]].reset_index(drop=True)], axis=1)
+
+    return model.predict(predict_data)[0]
 
 
 async def delete_job_request_controller(job_request: JobRequest, session: AsyncSession) -> None:

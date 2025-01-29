@@ -1,7 +1,9 @@
 from typing import Annotated
 
+from catboost import CatBoostRegressor
 from fastapi import APIRouter, Depends, HTTPException, Response, Query, status
 from sqlalchemy.ext.asyncio.session import AsyncSession
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from ..controllers.job import (
     get_job_requests_controller,
@@ -9,9 +11,11 @@ from ..controllers.job import (
     get_job_request_by_id_controller,
     create_job_request_controller,
     patch_job_request_controller,
+    suggest_price_for_job_request_controller,
     delete_job_request_controller,
 )
-from ..dependencies.auth import get_current_active_user, Autorized
+from ..dependencies.ai import Model, Vectorizer
+from ..dependencies.auth import get_current_active_user
 from ..dependencies.database import get_async_session
 from ..models.abstract import PaginatedResponse
 from ..models.job import JobRequest, JobRequestBase, JobRequestPatch
@@ -68,6 +72,24 @@ async def get_job_request_by_id(
     _: Annotated[UserRead, Depends(get_current_active_user)],
 ):
     return await get_job_request_by_id_controller(request_id=request_id, session=session)
+
+
+@router.post("/{request_id}/suggest-budget", summary="Suggest budget for job request")
+async def suggest_budget_job_request(
+    request_id: str,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+    model: Annotated[CatBoostRegressor, Depends(Model("price_suggestion"))],
+    vectorizer: Annotated[TfidfVectorizer, Depends(Vectorizer("price_suggestion"))],
+    current_user: Annotated[UserRead, Depends(get_current_active_user)],
+):
+    job_request = await get_job_request_by_id_controller(request_id, session)
+    if job_request.user_id != current_user.id and current_user.role != UserRoles.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Cannot patch this job request.",
+        )
+    suggested_budget = await suggest_price_for_job_request_controller(job_request=job_request, model=model, vectorizer=vectorizer)
+    return {"budget": suggested_budget}
 
 
 @router.patch("/{request_id}", response_model=JobRequest, summary="Update job request")

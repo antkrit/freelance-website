@@ -21,6 +21,8 @@ greenlet = "^3.1.1"
 sqlalchemy-utils = "^0.41.2"
 bcrypt = "4.0.1"
 pandas = "^2.2.3"
+catboost = "^1.2.7"
+scikit-learn = "^1.6.1"
 
 [tool.poetry.group.dev.dependencies]
 poetry-plugin-export = "^1.8.0"

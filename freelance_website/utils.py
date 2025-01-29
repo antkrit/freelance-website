@@ -1,5 +1,6 @@
 import logging
 import typing as t
+import pickle
 
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
@@ -53,3 +54,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, auth_settings.signature_key, algorithm=auth_settings.algorithm)
     return encoded_jwt
+
+
+def load_pickle(path: str):
+    with open(path, 'rb') as file:
+        return pickle.load(file)
