@@ -1,4 +1,6 @@
 import enum
+import functools
+
 from typing import Optional
 
 from sqlalchemy import Column, Enum
@@ -21,6 +23,11 @@ class RegisterRequest(BaseModel):
 class UserRoles(enum.StrEnum):
    admin = "admin"
    user = "user"
+
+   @classmethod
+   @functools.lru_cache(maxsize=32)
+   def all(cls):
+      return list(map(lambda c: c.value, cls))
 
 
 class UserBase(SQLModel):

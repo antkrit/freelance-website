@@ -15,7 +15,7 @@ from ..controllers.job import (
     delete_job_request_controller,
 )
 from ..dependencies.ai import Model, Vectorizer
-from ..dependencies.auth import get_current_active_user
+from ..dependencies.auth import Autorized
 from ..dependencies.database import get_async_session
 from ..models.abstract import PaginatedResponse
 from ..models.job import JobRequest, JobRequestBase, JobRequestPatch
@@ -28,7 +28,7 @@ router = APIRouter(prefix="/jobs", tags=["Job Requests"])
 @router.get("/", response_model=PaginatedResponse[JobRequest], summary="Get list of job requests")
 async def get_job_requests(
     session: Annotated[AsyncSession, Depends(get_async_session)],
-    _: Annotated[UserRead, Depends(get_current_active_user)],
+    _: Annotated[UserRead, Depends(Autorized(allowed_roles=UserRoles.all()))],
     limit: int = Query(10, ge=0),
     offset: int = Query(0, ge=0)
 ):
@@ -43,7 +43,7 @@ async def get_job_requests(
 async def create_job_request(
     request_data: JobRequestBase,
     session: Annotated[AsyncSession, Depends(get_async_session)],
-    current_user: Annotated[UserRead, Depends(get_current_active_user)],
+    current_user: Annotated[UserRead, Depends(Autorized(allowed_roles=UserRoles.all()))],
 ):
     request_data = request_data.model_dump()
     request_data["user_id"] = current_user.id
@@ -54,7 +54,7 @@ async def create_job_request(
 async def get_job_requests(
     user_id: str,
     session: Annotated[AsyncSession, Depends(get_async_session)],
-    _: Annotated[UserRead, Depends(get_current_active_user)],
+    _: Annotated[UserRead, Depends(Autorized(allowed_roles=UserRoles.all()))],
     limit: int = Query(10, ge=0),
     offset: int = Query(0, ge=0)
 ):
@@ -69,7 +69,7 @@ async def get_job_requests(
 async def get_job_request_by_id(
     request_id: str,
     session: Annotated[AsyncSession, Depends(get_async_session)],
-    _: Annotated[UserRead, Depends(get_current_active_user)],
+    _: Annotated[UserRead, Depends(Autorized(allowed_roles=UserRoles.all()))],
 ):
     return await get_job_request_by_id_controller(request_id=request_id, session=session)
 
@@ -80,7 +80,7 @@ async def suggest_budget_job_request(
     session: Annotated[AsyncSession, Depends(get_async_session)],
     model: Annotated[CatBoostRegressor, Depends(Model("price_suggestion"))],
     vectorizer: Annotated[TfidfVectorizer, Depends(Vectorizer("price_suggestion"))],
-    current_user: Annotated[UserRead, Depends(get_current_active_user)],
+    current_user: Annotated[UserRead, Depends(Autorized(allowed_roles=UserRoles.all()))],
 ):
     job_request = await get_job_request_by_id_controller(request_id, session)
     if job_request.user_id != current_user.id and current_user.role != UserRoles.admin:
@@ -97,7 +97,7 @@ async def patch_job_request(
     request_id: str,
     request_data: JobRequestPatch,
     session: Annotated[AsyncSession, Depends(get_async_session)],
-    current_user: Annotated[UserRead, Depends(get_current_active_user)],
+    current_user: Annotated[UserRead, Depends(Autorized(allowed_roles=UserRoles.all()))],
 ):
     job_request = await get_job_request_by_id_controller(request_id, session)
     if job_request.user_id != current_user.id and current_user.role != UserRoles.admin:
@@ -112,7 +112,7 @@ async def patch_job_request(
 async def delete_job_request(
     request_id: str,
     session: Annotated[AsyncSession, Depends(get_async_session)],
-    current_user: Annotated[UserRead, Depends(get_current_active_user)]
+    current_user: Annotated[UserRead, Depends(Autorized(allowed_roles=UserRoles.all()))]
 ):
     job_request = await get_job_request_by_id_controller(request_id, session)
     if job_request.user_id != current_user.id and current_user.role != UserRoles.admin:
